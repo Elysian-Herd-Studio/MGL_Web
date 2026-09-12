@@ -59,7 +59,7 @@ useHead(() => ({
       </v-col>
 
       <v-col cols="12" md="9" lg="10">
-        <v-card class="pa-4 pa-md-6">
+        <v-card class="docs-content-card pa-4 pa-md-6">
           <v-progress-linear v-if="status === 'pending'" indeterminate />
           <v-alert v-else-if="pageError" type="warning" variant="tonal">
             {{ pageErrorMessage }}
@@ -75,6 +75,13 @@ useHead(() => ({
 .docs-nav-card {
   position: sticky;
   top: 80px;
+  /* Override the site-wide card surface so the sidebar sits on the page
+     background; unlayered CSS beats Vuetify's layered bg-surface-light. */
+  background: transparent;
+}
+
+.docs-content-card {
+  background: transparent;
 }
 
 .markdown-body :deep(h1),

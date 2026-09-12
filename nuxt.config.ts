@@ -23,6 +23,12 @@ export default defineNuxtConfig({
       prefixComposables: ['useLayout']
     },
     vuetifyOptions: {
+      // Vuetify defaults to `defaultTheme: 'system'`, which resolves to dark on
+      // the client but light during SSR, causing a theme flash/mismatch. Pin it
+      // so server and client always agree.
+      theme: {
+        defaultTheme: 'light'
+      },
       defaults: {
         // Site-wide card look: extra-large radius, no border/shadow, and a
         // contrasting surface so cards stay visible without an outline.
