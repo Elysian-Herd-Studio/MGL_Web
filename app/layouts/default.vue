@@ -36,7 +36,7 @@ const modeIcon = computed(() =>
       </div>
     </v-app-bar>
 
-    <v-main>
+    <v-main class="px-3 px-sm-10 px-md-16">
       <slot />
     </v-main>
   </v-app>
