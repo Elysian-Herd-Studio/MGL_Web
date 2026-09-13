@@ -10,6 +10,10 @@ interface DocPage extends DocEntry {
 
 const route = useRoute()
 
+definePageMeta({
+  key: (route) => route.fullPath
+})
+
 const slug = computed(() => {
   const param = route.params.slug
   return (Array.isArray(param) ? param[0] : param) || 'home'
@@ -19,7 +23,7 @@ const { data: pages, error: pagesError } = await useFetch<DocEntry[]>('/api/docs
 
 const { data: page, status, error: pageError } = await useFetch<DocPage>(
   () => `/api/docs/${slug.value}`,
-  { watch: [slug] }
+  { key: `docs-${slug.value}` }
 )
 
 const pageErrorMessage = computed(() => {

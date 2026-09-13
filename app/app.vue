@@ -41,6 +41,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <NuxtLoadingIndicator color="#ffffff" />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
@@ -63,5 +64,9 @@ onMounted(() => {
 
 .docs-nav-card .v-list {
   background: transparent;
+}
+
+.nuxt-loading-indicator {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 </style>
