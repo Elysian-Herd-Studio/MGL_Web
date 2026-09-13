@@ -1,5 +1,8 @@
 <script setup lang="ts">
-const { preference, isDark, cycle } = useThemeMode()
+const { preference, cycle } = useThemeMode()
+const theme = useTheme()
+
+const isDark = computed(() => !!theme.current.value.dark)
 
 const modeIcon = computed(() =>
   preference.value === 'light'
@@ -13,7 +16,7 @@ const modeIcon = computed(() =>
 <template>
   <v-app>
     <v-app-bar flat :color="isDark ? 'purple-darken-4' : 'purple-lighten-4'">
-      <div class="d-flex align-center w-100 px-10">
+      <div class="d-flex align-center w-100 px-6 px-sm-10 px-md-16">
         <img src="/icon-full.png" alt="Magical Land" class="app-logo">
         <v-btn
           icon

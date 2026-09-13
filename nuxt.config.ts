@@ -26,9 +26,23 @@ export default defineNuxtConfig({
       // `useLayout` (#app/composables/layout). Prefix it to `useVLayout`.
       prefixComposables: ['useLayout']
     },
+    ssrClientHints: {
+      reloadOnFirstRequest: true,
+      prefersColorScheme: true,
+      prefersColorSchemeOptions: {
+        baseUrl: '/',
+        cookie: { name: 'vuetify-color-scheme' },
+        darkThemeName: 'dark',
+        lightThemeName: 'light'
+      }
+    },
     vuetifyOptions: {
       theme: {
-        defaultTheme: 'light'
+        defaultTheme: 'light',
+        themes: {
+          light: {},
+          dark: {}
+        }
       },
       defaults: {
         // Site-wide card look: extra-large radius, no border/shadow, and a

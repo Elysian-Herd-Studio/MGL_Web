@@ -77,11 +77,11 @@ useHead(() => ({
   top: 80px;
   /* Override the site-wide card surface so the sidebar sits on the page
      background; unlayered CSS beats Vuetify's layered bg-surface-light. */
-  background: transparent;
+  background: transparent !important;
 }
 
 .docs-content-card {
-  background: transparent;
+  background: transparent !important;
 }
 
 .markdown-body :deep(h1),

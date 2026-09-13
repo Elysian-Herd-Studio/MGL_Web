@@ -11,26 +11,10 @@ export function useThemeMode() {
     cookie.value = value
   })
 
-  const systemDark = ref(false)
-  if (import.meta.client) {
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    systemDark.value = media.matches
-    const onChange = (e: MediaQueryListEvent) => {
-      systemDark.value = e.matches
-    }
-    media.addEventListener('change', onChange)
-    onScopeDispose(() => media.removeEventListener('change', onChange))
-  }
-
-  const isDark = computed(() =>
-    preference.value === 'dark' || (preference.value === 'system' && systemDark.value)
-  )
-
   const modes: ThemeMode[] = ['light', 'dark', 'system']
   function cycle() {
-    const next = modes[(modes.indexOf(preference.value) + 1) % modes.length]
-    preference.value = next
+    preference.value = modes[(modes.indexOf(preference.value) + 1) % modes.length]
   }
 
-  return { preference, isDark, cycle }
+  return { preference, cycle }
 }
