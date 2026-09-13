@@ -5,6 +5,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   devServer: { port: 4200 },
+  loadingIndicator: { color: '#ffffff' },
+  app: {
+    pageTransition: { name: 'page', mode: 'out-in' }
+  },
   modules: ['vuetify-nuxt-module'],
   runtimeConfig: {
     // Git-backed wiki source, cached locally and refreshed hourly by a Nitro
@@ -23,9 +27,6 @@ export default defineNuxtConfig({
       prefixComposables: ['useLayout']
     },
     vuetifyOptions: {
-      // Vuetify defaults to `defaultTheme: 'system'`, which resolves to dark on
-      // the client but light during SSR, causing a theme flash/mismatch. Pin it
-      // so server and client always agree.
       theme: {
         defaultTheme: 'light'
       },
