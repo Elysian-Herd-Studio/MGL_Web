@@ -1,51 +1,8 @@
-<script setup lang="ts">
-const { preference, cycle } = useThemeMode()
-const theme = useTheme()
-
-const isDark = computed(() => !!theme.current.value.dark)
-
-const modeIcon = computed(() =>
-  preference.value === 'light'
-    ? 'mdi-white-balance-sunny'
-    : preference.value === 'dark'
-      ? 'mdi-weather-night'
-      : 'mdi-theme-light-dark'
-)
-</script>
-
 <template>
-  <v-app>
-    <v-app-bar flat :color="isDark ? 'purple-darken-4' : 'purple-lighten-4'">
-      <div class="d-flex align-center w-100 px-6 px-sm-10 px-md-16">
-        <img src="/icon-full.png" alt="Magical Land" class="app-logo">
-        <v-btn
-          icon
-          variant="text"
-          size="small"
-          class="ms-4"
-          :title="`主题：${preference === 'system' ? '跟随系统' : preference === 'dark' ? '深色' : '浅色'}`"
-          @click="cycle"
-        >
-          <v-icon :icon="modeIcon" />
-        </v-btn>
-        <v-spacer />
-        <v-tabs :color="isDark ? 'purple-lighten-3' : 'purple-darken-3'" class="flex-grow-0">
-          <v-tab to="/">主页</v-tab>
-          <v-tab to="/docs">文档</v-tab>
-        </v-tabs>
-      </div>
-    </v-app-bar>
-
+  <div class="d-flex flex-column flex-grow-1">
+    <AppHeader />
     <v-main class="px-3 px-sm-10 px-md-16">
       <slot />
     </v-main>
-  </v-app>
+  </div>
 </template>
-
-<style scoped>
-.app-logo {
-  display: block;
-  height: 36px;
-  width: auto;
-}
-</style>

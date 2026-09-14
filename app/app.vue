@@ -1,50 +1,10 @@
-<script setup lang="ts">
-const { preference } = useThemeMode()
-const theme = useTheme()
-const { $ssrClientHints } = useNuxtApp()
-
-const antiFlashScript = `;(function () {
-  try {
-    var dark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    var cookie = document.cookie
-    var hasScheme = /(?:^|;\\s*)vuetify-color-scheme=/.test(cookie)
-    var guarded = /(?:^|;\\s*)vuetify-nuxt-client-hints-reloaded=/.test(cookie)
-    if (dark && !hasScheme && !guarded) {
-      document.documentElement.style.background = '#121212'
-      var style = document.createElement('style')
-      style.textContent = 'body{visibility:hidden!important}'
-      document.head.appendChild(style)
-    }
-  } catch (e) {}
-})()`
-
-useHead({
-  script: [{
-    innerHTML: $ssrClientHints.firstRequest ? antiFlashScript : '',
-    tagPosition: 'head'
-  }]
-})
-
-watch(preference, (mode) => {
-  theme.change(mode)
-})
-
-onMounted(() => {
-  if (preference.value === 'system') {
-    if (!theme.isSystem.value) {
-      theme.change('system')
-    }
-  } else if (theme.name.value !== preference.value) {
-    theme.change(preference.value)
-  }
-})
-</script>
-
 <template>
-  <NuxtLoadingIndicator color="#ffffff" />
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <v-app>
+    <NuxtLoadingIndicator color="#c4b5fd" :height="3" />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </v-app>
 </template>
 
 <style>

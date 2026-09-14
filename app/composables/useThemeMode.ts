@@ -1,20 +1,6 @@
-export type ThemeMode = 'light' | 'dark' | 'system'
+export const THEME_MODES = ['light', 'dark', 'system'] as const
+export type ThemeMode = typeof THEME_MODES[number]
 
-export function useThemeMode() {
-  const cookie = useCookie<ThemeMode>('theme-mode', {
-    maxAge: 60 * 60 * 24 * 365,
-    sameSite: 'lax'
-  })
-  const preference = useState<ThemeMode>('theme-mode', () => cookie.value ?? 'system')
-
-  watch(preference, (value) => {
-    cookie.value = value
-  })
-
-  const modes: ThemeMode[] = ['light', 'dark', 'system']
-  function cycle() {
-    preference.value = modes[(modes.indexOf(preference.value) + 1) % modes.length]
-  }
-
-  return { preference, cycle }
+export function useThemeMode(initialMode: ThemeMode = 'system') {
+  return useState<ThemeMode>('site-theme-mode', () => initialMode)
 }

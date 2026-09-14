@@ -25,25 +25,30 @@ export default defineNuxtConfig({
       // `useLayout` (#app/composables/layout). Prefix it to `useVLayout`.
       prefixComposables: ['useLayout']
     },
-    ssrClientHints: {
-      reloadOnFirstRequest: true,
-      prefersColorScheme: true,
-      prefersColorSchemeOptions: {
-        baseUrl: '/',
-        cookie: { name: 'vuetify-color-scheme' },
-        darkThemeName: 'dark',
-        lightThemeName: 'light'
-      }
-    },
     vuetifyOptions: {
       theme: {
         defaultTheme: 'light',
         themes: {
-          light: {},
-          dark: {}
+          light: {
+            colors: {
+              'app-header': '#EEEEEE'
+            }
+          },
+          dark: {
+            colors: {
+              'app-header': '#1E1E24'
+            }
+          }
         }
       },
       defaults: {
+        VAppBar: {
+          color: 'app-header',
+          flat: true
+        },
+        VBtn: {
+          rounded: 'xl'
+        },
         // Site-wide card look: extra-large radius, no border/shadow, and a
         // contrasting surface so cards stay visible without an outline.
         VCard: {
