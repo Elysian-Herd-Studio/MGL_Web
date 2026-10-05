@@ -1,16 +1,16 @@
 import { spawn } from 'node:child_process'
 import { readdir, readFile, rm, mkdir, access } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { marked } from 'marked'
+import { Marked, type Token } from 'marked'
+import type { DocEntry, DocPage, DocTocEntry } from '../../shared/types/docs'
+import { docsPath } from '../../shared/utils/docs'
 
-export interface WikiEntry {
-  slug: string
+export interface WikiEntry extends DocEntry {
   file: string
-  title: string
 }
 
-export interface WikiPage extends WikiEntry {
-  html: string
+export interface WikiPage extends DocPage {
+  file: string
 }
 
 interface WikiState {
@@ -42,21 +42,76 @@ export function slugify(name: string): string {
 
 function decodeHref(href: string): string {
   try {
-    return decodeURI(href)
+    return decodeURIComponent(href)
   } catch {
     return href
   }
 }
 
-// GitHub wiki pages link to each other with plain relative links
-// (e.g. `[Guide](User-Guide)`); point those at our own /docs routes.
-marked.use({
-  walkTokens(token) {
-    if (token.type !== 'link' || typeof token.href !== 'string') return
-    if (EXTERNAL_LINK.test(token.href)) return
-    token.href = `/docs/${slugify(decodeHref(token.href))}`
-  }
-})
+function inlineText(tokens: Token[] = []): string {
+  return tokens.map((token) => {
+    if (token.type === 'html') return ''
+    if (token.type === 'br') return ' '
+    if ('tokens' in token && Array.isArray(token.tokens)) return inlineText(token.tokens)
+    return 'text' in token && typeof token.text === 'string' ? token.text : ''
+  }).join('')
+}
+
+function parseSource(markdown: string, file: string) {
+  const renderer = new Marked()
+  const tokens = renderer.lexer(markdown)
+  const titleIndex = tokens.findIndex((token) => token.type !== 'space')
+  const heading = tokens[titleIndex]
+  const title = heading?.type === 'heading' && heading.depth === 1
+    ? inlineText(heading.tokens).trim()
+    : ''
+
+  if (title) tokens.splice(titleIndex, 1)
+
+  return { renderer, tokens, title: title || file.replace(/\.md$/i, '') }
+}
+
+function renderMarkdown(markdown: string, file: string) {
+  const { renderer, tokens, title } = parseSource(markdown, file)
+  const usedIds = new Set<string>()
+  const toc: DocTocEntry[] = []
+
+  renderer.use({
+    walkTokens(token) {
+      if (token.type !== 'link' || typeof token.href !== 'string') return
+      if (EXTERNAL_LINK.test(token.href)) return
+
+      const [, path = '', suffix = ''] = /^([^?#]*)(.*)$/.exec(token.href) ?? []
+      const target = decodeHref(path).replace(/^\.\//, '')
+      if (/\.[^/.]+$/.test(target) && !/\.md$/i.test(target)) return
+      token.href = `${docsPath(slugify(target))}${suffix}`
+    },
+    renderer: {
+      heading({ tokens, depth }) {
+        const text = inlineText(tokens).trim()
+        const base = text.toLowerCase()
+          .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, '')
+          .replace(/\s/g, '-') || 'section'
+        let id = base
+        let count = 0
+        while (usedIds.has(id)) id = `${base}-${++count}`
+        usedIds.add(id)
+        toc.push({ id, text, depth })
+
+        return `<h${depth} id="${id}">${this.parser.parseInline(tokens)}</h${depth}>\n`
+      }
+    }
+  })
+
+  renderer.walkTokens(tokens, renderer.defaults.walkTokens!)
+  return { title, html: renderer.parser(tokens), toc }
+}
+
+function buildEditUrl(repoUrl: string, file: string): string {
+  const match = /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\.wiki(?:\.git)?\/?$/i.exec(repoUrl)
+  if (!match) return ''
+  return `https://github.com/${match[1]}/${match[2]}/wiki/${encodeURIComponent(file.replace(/\.md$/i, ''))}/_edit`
+}
 
 function isPrerender(): boolean {
   return Boolean((import.meta as ImportMeta & { prerender?: boolean }).prerender)
@@ -116,8 +171,7 @@ async function hasMarkdown(dir: string): Promise<boolean> {
 }
 
 function extractTitle(markdown: string, file: string): string {
-  const title = markdown.match(/^#\s+(.+)$/m)?.[1]?.trim()
-  return title || file.replace(/\.md$/i, '')
+  return parseSource(markdown, file).title
 }
 
 async function runSync(): Promise<void> {
@@ -199,12 +253,28 @@ export async function getWikiPage(slug: string): Promise<WikiPage | null> {
   const entries = await loadEntries()
 
   // Only ever resolve through the index; never join user input into a path.
-  const entry = entries.find((item) => item.slug === slug)
+  const index = entries.findIndex((item) => item.slug === slug)
+  const entry = entries[index]
   if (!entry) return null
 
-  const { wikiDir } = useRuntimeConfig()
+  const { wikiDir, wikiRepoUrl } = useRuntimeConfig()
   const markdown = await readFile(join(wikiDir, entry.file), 'utf8')
-  const html = await marked.parse(markdown)
+  const { title, html, toc } = renderMarkdown(markdown, entry.file)
+  const updatedAt = await git(['log', '-1', '--format=%cI', '--', entry.file], wikiDir)
+    .then((date) => date.trim())
+    .catch(() => '')
+  const toMeta = (item: WikiEntry | undefined): DocEntry | null => item
+    ? { slug: item.slug, title: item.title }
+    : null
 
-  return { ...entry, html }
+  return {
+    ...entry,
+    title,
+    html,
+    toc,
+    updatedAt,
+    editUrl: buildEditUrl(wikiRepoUrl, entry.file),
+    prev: toMeta(entries[index - 1]),
+    next: toMeta(entries[index + 1])
+  }
 }

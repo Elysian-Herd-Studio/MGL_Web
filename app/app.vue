@@ -17,15 +17,6 @@
   opacity: 0;
 }
 
-.docs-nav-card,
-.docs-content-card {
-  background: transparent !important;
-}
-
-.docs-nav-card .v-list {
-  background: transparent;
-}
-
 .nuxt-loading-indicator {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
