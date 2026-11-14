@@ -18,9 +18,6 @@ export default defineNuxtConfig({
   },
   vuetify: {
     moduleOptions: {
-      // Vuetify 4 moved createRulesPlugin/useRules into core; the module still
-      // resolves them from `vuetify/labs/rules`, which no longer exists.
-      enableRules: false,
       // Vuetify exports `useLayout`, which collides with Nuxt's built-in
       // `useLayout` (#app/composables/layout). Prefix it to `useVLayout`.
       prefixComposables: ['useLayout']
